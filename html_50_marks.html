@@ -1,0 +1,631 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>HTML QUIZ 50 Marks</title>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            background-color: #f4f7fc;
+            margin: 0;
+            padding: 0;
+        }
+
+        /* Fixed Navbar */
+        header {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            background-color: #3f038f;
+            color: white;
+            padding: 15px;
+            text-align: center;
+            font-size: 24px;
+            z-index: 1000;
+        }
+
+        /* Timer styling under the navbar */
+        .timer {
+            text-align: right;
+            font-size: 18px;
+            margin: 20px 20px;
+            position: fixed;
+            top:100px;
+            right: 0;
+            padding: 12px 24px;
+            background-color: #3f038f;
+            color: white;
+            border-radius: 10px;
+        }
+
+        /* Center the quiz container with padding */
+        .quiz-container {
+            padding: 20px;
+            margin: 0 auto;
+            width: 70%;
+            max-width: 900px;
+            margin-top: 100px; /* Space for fixed navbar */
+        }
+
+        .question-container {
+            background-color: #ffffff;
+            border-radius: 8px;
+            box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+            margin-bottom: 20px;
+            padding: 15px;
+        }
+
+        .question-container p {
+            font-size: 18px;
+            font-weight: bold;
+        }
+
+        .question-container input[type="radio"] {
+            margin-right: 10px;
+        }
+
+        button {
+            background-color: #3f038f;
+            color: white;
+            border: none;
+            padding: 10px 20px;
+            font-size: 16px;
+            border-radius: 5px;
+            cursor: pointer;
+            transition: background-color 0.3s ease;
+        }
+
+        button:hover {
+            background-color: #5e0cbe;
+        }
+
+        .result-popup, .answer-page {
+            display: none;
+            position: fixed;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            padding: 30px;
+            background-color: #fff;
+            border-radius: 10px;
+            box-shadow: 0 0 15px rgba(0, 0, 0, 0.2);
+            text-align: center;
+            z-index: 999;
+            width: 80%;
+            max-width: 500px;
+        }
+
+        .result-popup h2, .answer-page h2 {
+            margin-bottom: 20px;
+        }
+
+        .answer-page p {
+            text-align: left;
+            margin: 10px 0;
+            padding: 5px;
+            background-color: #f1f1f1;
+            border-radius: 5px;
+        }
+
+        .correct-answer {
+            color: #4caf50;
+        }
+
+        .incorrect-answer {
+            color: #f44336;
+        }
+
+        .highlight {
+            background-color: #ffeb3b;
+        }
+
+        .highlight-btn {
+            background-color: #ff5722;
+        }
+
+        .form-container {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+        }
+
+        .form-box {
+            background-color: white;
+            padding: 20px;
+            box-shadow: 0 0 15px rgba(0, 0, 0, 0.1);
+            border-radius: 8px;
+            width: 300px; /* Set fixed width for form popup */
+            position: absolute;
+            top: 50%;
+            left:50%;
+            transform: translate(-50%, -50%);
+        }
+
+        .form-box input {
+            margin-bottom: 10px;
+            padding: 8px;
+            width: 100%;
+            border-radius: 5px;
+            border: 1px solid #ddd;
+        }
+
+        .form-box button {
+            width: 100%;
+            padding: 10px;
+        }
+
+        .pie-chart-container {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            width: 100%;
+            height: 250px;
+            margin: 20px 0;
+        }
+
+        .result-info {
+            margin-bottom: 20px;
+        }
+
+        .score-percentage {
+            font-size: 20px;
+            font-weight: bold;
+            margin: 10px 0;
+        }
+
+        .time-taken {
+            font-size: 16px;
+            color: #555;
+        }
+
+        /* Adjusting for better positioning of the form */
+        .form-box input, .form-box button {
+            margin: 5px 0;
+        }
+
+        .navbar {width: 100%; height: 100px; background-color: #3f038f;
+            display: flex; align-items: center; justify-content: space-between; padding: 0 100px; box-sizing: border-box;
+            
+        }
+        .navbar img { height: 65%;}
+        .navbar h1 {color: white;}
+        .navbar button {background-color: white; color: black; font-weight: bolder;}
+
+
+        @media only screen and (max-width:540px) {
+            .navbar { height: 50px; padding: 0 30px; }
+            .navbar h1 { font-size: 12px;}
+            .navbar button {padding: 5px 15px;}
+        }
+
+</style>
+</head>
+<body>
+    
+    <nav class="navbar"><img src="next-academy-logo.png" alt=""> <h1>HTML TEST 50 Marks</h1> <button>50 Marks</button></nav>
+
+    <!-- Popup to collect student details -->
+    <div id="student-popup" class="form-container">
+        <div class="form-box">
+            <h2>Enter Your Details</h2>
+            <form id="student-form">
+                <input type="text" id="student-name" placeholder="Name" required>
+                <input type="text" id="student-roll" placeholder="Roll Number" required>
+                <button type="submit">Start Quiz</button>
+            </form>
+        </div>
+    </div>
+
+    <!-- Quiz Section -->
+    <div class="quiz-container" style="display:none;">
+        <div class="timer" id="timer">Time Left: 20:00</div>
+
+        <div id="quiz-content"></div>
+
+        <button onclick="submitQuiz()">Submit Quiz</button>
+    </div>
+
+    <!-- Result Popup -->
+    <div id="result-popup" class="result-popup">
+        <h2>Your Result, <span id="student-name-result"></span></h2>
+        <div class="result-info">
+            <p id="result-msg"></p>
+            <p class="score-percentage" id="score-percentage"></p>
+            <p class="time-taken" id="time-taken"></p>
+        </div>
+        <div class="pie-chart-container">
+            <canvas id="result-pie-chart"></canvas>
+        </div>
+        <button onclick="showAnswers()">Show Correct Answers</button>
+    </div>
+
+    <!-- Answer Review Page -->
+    <div id="answer-page" class="answer-page">
+        <h2>Correct Answers</h2>
+        <div id="answers-list"></div>
+        <button onclick="closeAnswers()">Close</button>
+    </div>
+
+    <script>
+        // Timer Setup
+        let timeLeft = 20 * 60; // 20 minutes in seconds
+        let timer;
+        let startTime;
+
+        function startTimer() {
+            startTime = Date.now();
+            timer = setInterval(() => {
+                timeLeft--;
+                let minutes = Math.floor(timeLeft / 60);
+                let seconds = timeLeft % 60;
+                document.getElementById("timer").textContent = `Time Left: ${minutes}:${seconds < 10 ? '0' + seconds : seconds}`;
+                if (timeLeft <= 0) {
+                    clearInterval(timer);
+                    alert("Time's up!");
+                    submitQuiz();
+                }
+            }, 1000);
+        }
+
+        // Dynamic Quiz Content
+        const questions = [
+        
+    {
+        question: "What is the correct HTML element for inserting a line break?",
+        options: ['&lt;break&gt;', '&lt;br&gt;', '&lt;lb&gt;', '&lt;newline&gt;'],
+        correct: 1
+    },
+    {
+        question: "Which HTML tag is used to define an unordered list?",
+        options: ['&lt;ul&gt;', '&lt;ol&gt;', '&lt;li&gt;', '&lt;list&gt;'],
+        correct: 0
+    },
+    {
+        question: "What is the correct HTML tag for inserting an image?",
+        options: ['&lt;img&gt;', '&lt;image&gt;', '&lt;src&gt;', '&lt;picture&gt;'],
+        correct: 0
+    },
+    {
+        question: "How do you make a list item that can be clicked and leads to another page?",
+        options: ['&lt;a&gt;', '&lt;link&gt;', '&lt;href&gt;', '&lt;button&gt;'],
+        correct: 0
+    },
+    {
+        question: "What does the &lt;meta&gt; tag in HTML do?",
+        options: ['Specifies the character encoding', 'Defines the document title', 'Provides metadata about the HTML document', 'Creates a link to an external resource'],
+        correct: 2
+    },
+    {
+        question: "Which property is used to change the background color in CSS?",
+        options: ['color', 'background-color', 'bg-color', 'background'],
+        correct: 1
+    },
+    {
+        question: "How do you select an element with the id 'header' in CSS?",
+        options: ['.header', '#header', 'header', '*header'],
+        correct: 1
+    },
+    {
+        question: "Which CSS property is used to set the space between the content of an element and its border?",
+        options: ['padding', 'margin', 'border-spacing', 'spacing'],
+        correct: 0
+    },
+    {
+        question: "How do you center a block element using CSS?",
+        options: ['margin: 0 auto;', 'text-align: center;', 'center-align: block;', 'align: center;'],
+        correct: 0
+    },
+    {
+        question: "Which CSS property controls the font size?",
+        options: ['font-style', 'font-size', 'text-size', 'font-weight'],
+        correct: 1
+    },
+    {
+        question: "What is a media query used for in CSS?",
+        options: ['To define different styles for different screen sizes', 'To apply a background image', 'To apply color changes on hover', 'To control the font style'],
+        correct: 0
+    },
+    {
+        question: "How do you target devices with a screen width of 600px or less in a media query?",
+        options: ['@media (max-width: 600px)', '@media (min-width: 600px)', '@media width &lt; 600px', '@media screen: 600px'],
+        correct: 0
+    },
+    {
+        question: "How can you specify different styles for devices with a landscape orientation in CSS?",
+        options: ['@media (orientation: landscape)', '@media (landscape: true)', '@media (device-orientation: landscape)', '@media landscape'],
+        correct: 0
+    },
+    {
+        question: "What is the purpose of @media screen in CSS?",
+        options: ['To apply styles only to screen devices', 'To apply styles to print devices', 'To apply styles to images', 'To create animations for screens'],
+        correct: 0
+    },
+    {
+        question: "Which media query condition would you use for screens that are at least 1024px wide?",
+        options: ['@media (max-width: 1024px)', '@media (min-width: 1024px)', '@media (width: 1024px)', '@media (device-width: 1024px)'],
+        correct: 1
+    },
+    {
+        question: "Which CSS property is used to define an animation?",
+        options: ['animation', '@keyframes', 'transition', 'animate'],
+        correct: 0
+    },
+    {
+        question: "What is the purpose of @keyframes in CSS animations?",
+        options: ['To define the name of the animation', 'To specify the starting and ending states of an animation', 'To apply styles during an animation', 'To define the duration of an animation'],
+        correct: 1
+    },
+    {
+        question: "How do you define an animation with a 2-second duration in CSS?",
+        options: ['animation-duration: 2s;', 'duration: 2s;', 'animation: 2s;', 'animation-time: 2s;'],
+        correct: 0
+    },
+    {
+        question: "Which of the following is used to specify how many times an animation should run?",
+        options: ['animation-iteration-count', 'animation-timing-function', 'animation-duration', 'animation-fill-mode'],
+        correct: 0
+    },
+    {
+        question: "What does animation-timing-function specify in CSS?",
+        options: ['The duration of the animation', 'The number of iterations', 'The speed curve of the animation', 'The direction of the animation'],
+        correct: 2
+    },
+    {
+        question: "What is a CSS transition used for?",
+        options: ['To apply background color changes', 'To animate a change in CSS property', 'To add new elements', 'To set initial styles for an element'],
+        correct: 1
+    },
+    {
+        question: "How do you specify a transition effect for changing the background color over 1 second?",
+        options: ['transition: background-color 1s;', 'background-color: transition 1s;', 'transition: 1s background-color;', 'background-transition: 1s;'],
+        correct: 0
+    },
+    {
+        question: "Which property is used to control the delay before a transition starts?",
+        options: ['transition-delay', 'transition-duration', 'transition-timing', 'transition-speed'],
+        correct: 0
+    },
+    {
+        question: "What is the default value of the transition-timing-function property?",
+        options: ['ease', 'linear', 'ease-in-out', 'ease-in'],
+        correct: 0
+    },
+    {
+        question: "What does transition: all 0.5s ease-in-out; mean?",
+        options: ['All properties will transition with a 0.5s duration, starting slow and speeding up', 'Only all will transition', 'The element will transition all properties every 0.5s', 'The transition will be linear'],
+        correct: 0
+    },
+    {
+        question: "What is the purpose of a responsive design?",
+        options: ['To make the website look the same across all devices', 'To make websites load faster', 'To ensure the website looks good on different screen sizes', 'To increase page loading speed'],
+        correct: 2
+    },
+    {
+        question: "How do you make an image responsive in CSS?",
+        options: ['img { max-width: 100%; height: auto; }', 'img { width: 100%; height: auto; }', 'img { max-width: 100%; height: 100%; }', 'img { width: 100%; }'],
+        correct: 0
+    },
+    {
+        question: "How can you disable resizing of an element in a responsive design?",
+        options: ['resize: none;', 'resize: disabled;', 'resize: 0;', 'resize: auto;'],
+        correct: 0
+    },
+    {
+        question: "What media query would you use for mobile devices only?",
+        options: ['@media (max-width: 480px)', '@media (min-width: 320px)', '@media (min-width: 768px)', '@media (device-width: 360px)'],
+        correct: 0
+    },
+    {
+        question: "Which of the following is true for a fluid layout?",
+        options: ['It adapts to any screen size', 'It has fixed dimensions', 'It uses a grid system', 'It is based on absolute positioning'],
+        correct: 0
+    },
+    {
+        question: "Which function in CSS is used to create a custom speed curve for animations?",
+        options: ['cubic-bezier()', 'ease-out()', 'linear()', 'bounce()'],
+        correct: 0
+    },
+    {
+        question: "What property is used to change the direction of an animation?",
+        options: ['animation-direction', 'direction', 'animation-reverse', 'transform'],
+        correct: 0
+    },
+    {
+        question: "What is the initial value of the animation-play-state property?",
+        options: ['running', 'paused', 'stopped', 'active'],
+        correct: 1
+    },
+    {
+        question: "Which CSS property is used to apply an effect when hovering over an element?",
+        options: ['hover', ':hover', 'hover-effect', 'transition'],
+        correct: 1
+    },
+    {
+        question: "Which animation type repeats indefinitely in CSS?",
+        options: ['infinite', 'forever', 'loop', 'continuous'],
+        correct: 0
+    },
+    {
+        question: "Which property in CSS defines how flex items are arranged in a flex container?",
+        options: ['flex-direction', 'align-items', 'justify-content', 'align-self'],
+        correct: 0
+    },
+    {
+        question: "In CSS Grid, how do you define the columns of a grid?",
+        options: ['grid-template-columns', 'grid-columns', 'grid-template-rows', 'column-template'],
+        correct: 0
+    },
+    {
+        question: "What property is used to make a flex container align its items vertically?",
+        options: ['align-items', 'justify-items', 'align-content', 'flex-align'],
+        correct: 0
+    },
+    {
+        question: "How do you set a fixed size for a grid item in CSS Grid?",
+        options: ['grid-template-size', 'grid-item-size', 'grid-area', 'grid-column'],
+        correct: 2
+    },
+    {
+        question: "Which property is used to set how flex items should behave in a flex container?",
+        options: ['flex-grow', 'flex-shrink', 'flex-basis', 'flex'],
+        correct: 3
+    },
+    {
+        question: "Which of these is a valid CSS selector for class names?",
+        options: ['.class-name', '#class-name', 'class-name', '*class-name'],
+        correct: 0
+    },
+    {
+        question: "How do you apply a CSS class to an HTML element?",
+        options: ['&lt;div class="class-name"&gt;', '&lt;div id="class-name"&gt;', '&lt;div name="class-name"&gt;', '&lt;div style="class-name"&gt;'],
+        correct: 0
+    },
+    {
+        question: "What is the correct syntax for embedding CSS in an HTML document?",
+        options: ['&lt;style&gt;', '&lt;css&gt;', '&lt;link&gt;', '&lt;script&gt;'],
+        correct: 0
+    },
+    {
+        question: "What property in CSS is used to control the transparency of an element?",
+        options: ['opacity', 'transparency', 'visibility', 'hidden'],
+        correct: 0
+    },
+    {
+        question: "Which tag is used to specify a hyperlink in HTML?",
+        options: ['&lt;a&gt;', '&lt;link&gt;', '&lt;hyperlink&gt;', '&lt;href&gt;'],
+        correct: 0
+    },
+    {
+        question: "Which property is used to set the width of an element in CSS?",
+        options: ['width', 'height', 'size', 'length'],
+        correct: 0
+    },
+    {
+        question: "What does box-sizing: border-box; do in CSS?",
+        options: ['Includes padding and border in the element’s total width and height', 'Sets the width and height to 100%', 'Adds margin to the total size', 'Reduces the padding and border size'],
+        correct: 0
+    },
+    {
+        question: "Which CSS property controls the stacking order of elements?",
+        options: ['z-index', 'position', 'stack', 'order'],
+        correct: 0
+    },
+    {
+        question: "What is the default value of position in CSS?",
+        options: ['absolute', 'relative', 'fixed', 'static'],
+        correct: 3
+    },
+    {
+        question: "Which method is used to center text in CSS?",
+        options: ['text-align: center;', 'align-text: center;', 'center-align: true;', 'align: center;'],
+        correct: 0
+    }
+
+
+        ];
+
+        // Load Quiz Again
+        function loadQuiz() {
+            const quizContent = document.getElementById("quiz-content");
+            quizContent.innerHTML = ""; // Clear previous questions
+            questions.forEach((q, index) => {
+                let questionHTML = `
+                    <div class="question-container">
+                        <p>${index + 1}. ${q.question}</p>
+                        ${q.options.map((option, i) => 
+                            `<input type="radio" name="q${index}" value="${i}" id="q${index}-opt${i}"> 
+                            <label for="q${index}-opt${i}">${option}</label><br>`
+                        ).join('')}
+                    </div>`;
+                quizContent.innerHTML += questionHTML;
+            });
+        }
+
+        let answers = [];
+
+        function submitQuiz() {
+            clearInterval(timer);
+            let score = 0;
+            answers = [];
+            questions.forEach((q, index) => {
+                const selectedAnswer = document.querySelector(`input[name="q${index}"]:checked`);
+                const correctAnswer = q.correct;
+                const userAnswer = selectedAnswer ? parseInt(selectedAnswer.value) : null;
+                answers.push({
+                    question: q.question,
+                    options: q.options,
+                    correctAnswer: q.options[correctAnswer],
+                    selectedAnswer: userAnswer !== null ? q.options[userAnswer] : 'None',
+                    isCorrect: userAnswer === correctAnswer
+                });
+                if (userAnswer === correctAnswer) score++;
+            });
+
+            const totalQuestions = questions.length;
+            const percentage = Math.round((score / totalQuestions) * 100);
+
+            // Calculate the time taken in minutes and seconds
+            const elapsedTimeInSeconds = Math.floor((Date.now() - startTime) / 1000);
+            const minutes = Math.floor(elapsedTimeInSeconds / 60);
+            const seconds = elapsedTimeInSeconds % 60;
+
+            // Displaying results
+            document.getElementById("student-name-result").textContent = document.getElementById("student-name").value;
+            document.getElementById("result-msg").textContent = `You answered ${score} out of ${totalQuestions} questions correctly.`;
+            document.getElementById("score-percentage").textContent = `Your score: ${percentage}%`;
+            document.getElementById("time-taken").textContent = `Time taken: ${minutes} minutes ${seconds} seconds`;
+
+            // Displaying the Pie Chart
+            const ctx = document.getElementById('result-pie-chart').getContext('2d');
+            const resultPieChart = new Chart(ctx, {
+                type: 'pie',
+                data: {
+                    labels: ['Correct', 'Incorrect'],
+                    datasets: [{
+                        label: 'Quiz Result',
+                        data: [score, totalQuestions - score],
+                        backgroundColor: ['#4caf50', '#f44336'],
+                    }]
+                }
+            });
+
+            // Show the result popup
+            document.getElementById("result-popup").style.display = 'block';
+        }
+
+        function showAnswers() {
+            const answersList = document.getElementById("answers-list");
+            answersList.innerHTML = '';
+            answers.forEach((answer, index) => {
+                const isCorrectClass = answer.isCorrect ? 'correct-answer' : 'incorrect-answer';
+                answersList.innerHTML += `
+                    <p>${index + 1}. ${answer.question}
+                        <br><strong>Correct Answer:</strong> <span class="${isCorrectClass}">${answer.correctAnswer}</span>
+                        <br><strong>Your Answer:</strong> <span class="${isCorrectClass}">${answer.selectedAnswer}</span>
+                    </p>`;
+            });
+            document.getElementById("answer-page").style.display = 'block';
+        }
+
+        function closeAnswers() {
+            document.getElementById("answer-page").style.display = 'none';
+        }
+
+        // Show student form popup at the start
+        document.getElementById("student-popup").style.display = 'block';
+
+        // Start the quiz when student form is submitted
+        document.getElementById("student-form").addEventListener("submit", function (e) {
+            e.preventDefault();
+            document.getElementById("student-popup").style.display = 'none';
+            document.querySelector(".quiz-container").style.display = 'block';
+            startTimer();
+            loadQuiz();
+        });
+    </script>
+</body>
+</html>
